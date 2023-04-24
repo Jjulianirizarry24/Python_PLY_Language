@@ -1,6 +1,9 @@
 import ply.yacc as yacc
 import ply.lex as lex
 
+
+
+
 # #Dictionary in which blockchains will be stored
 blockData = {}
 
@@ -8,7 +11,7 @@ blockData = {}
 tokens = ['ID','BLOCK','ADD','PRINT','VIEW','RUN','MINE','EXPORT','STR','INT','LONG','FLOAT','LIST','TUPLE','DICT','NUM','ASSIGN','TYPEASSIGN','SEPARATOR','LPAREN','RPAREN','NE','LT',
           'GT', 'PCT', 'LE','GE','PLUS','MINUS','STAR','SLASH']
 
-keywords = ['block', 'var', 'add', 'print', 'view', 'run', 'mine', 'export', 'str', 'int', 'long', 'float', 'List', 'Tuple', 'Dict','argsopt','test','args']
+keywords = ['var', 'add', 'print', 'view', 'run', 'mine', 'export', 'str', 'int', 'long', 'float', 'List', 'Tuple', 'Dict','argsopt','test','args']
 
 t_PLUS = r'\+'
 t_MINUS = r'\-'
@@ -128,15 +131,6 @@ def t_error(t):
 
 lexer = lex.lex()
 
-
-
-
-
-# #List of valid attributes:
-validAttributes = ['STR','PLUS','MINUS','STAR','SLASH','PCT']
-
-
-
 def p_expr(p):
     '''expression : term
                   | expression PLUS term
@@ -211,9 +205,6 @@ def p_type(p):
             | LIST
             | TUPLE
             | DICT'''
-            
-    
-
     p[0] = p[1]
 
 def p_attribute(p):
@@ -225,10 +216,13 @@ def p_attributes(p):
                   | attributes SEPARATOR attribute'''
 
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = [p[1]]
     else:
         p[1].append(p[3])
         p[0] = p[1]
+        
+        
+    
 
 
 def p_new_att(p):
@@ -238,17 +232,65 @@ def p_new_att(p):
     p[0] = (p[1], p[3])
 
 
-# def p_new_atts(p):
-#     '''new_atts : new_att
-#                 | new_atts SEPARATOR new_att'''
+def p_new_atts(p):
+    '''new_atts : new_att
+                | new_atts SEPARATOR new_att'''
     
 
-#     if len(p) == 2:
-#         p[0] = [p[1]]
-#     else:
-#         p[1].append(p[3])
-#         p[0] = p[1]
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[1].append(p[3])
+        p[0] = p[1]
 
+
+# #List of valid attributes:
+validAttributes = ['STR','PLUS','MINUS','STAR','SLASH','PCT']
+
+def p_block(p):
+    'block : BLOCK ID'
+    # '''block : BLOCK ID ASSIGN LPAREN attributes RPAREN
+    #          | ADD ID ASSIGN LPAREN attributes RPAREN
+    #          | PRINT ID
+    #          | RUN ID
+    #          | MINE ID
+    #          | EXPORT ID
+    #          | VIEW ID'''
+    
+    if (len(p) == 2):
+        print("Created block")
+        
+    
+    if len(p) == 7:
+        for att in p[5]:
+            if att not in validAttributes:
+                print("Error in attributes")
+                return False
+            
+                    
+        if p[1] == 'BLOCK':
+            print("Blockchain was created")
+            return True
+        
+        elif p[1] == 'ADD':
+            pass
+        
+        else:
+            print("Blockchain could not be created")
+            return False
+
+    else:
+        if p[1] == 'PRINT':
+             print("Printing Block")
+        elif p[1] == 'RUN':
+             print("Running Block")
+        elif p[1] == 'MINE':
+             print("Minning Block")
+        elif p[1] == 'EXPORT':
+             print("Exporting Block")
+        else:
+             print("Viewing Block")
+             
 
 def p_test(p):
     '''test : expression NE expression
@@ -277,40 +319,6 @@ def p_test(p):
         print("Invalid Expression")
         
 
-
-def p_block(p):
-    '''block : BLOCK ID ASSIGN LPAREN attributes RPAREN
-             | ADD ID ASSIGN LPAREN attributes RPAREN
-             | PRINT ID
-             | RUN ID
-             | MINE ID
-             | EXPORT ID
-             | VIEW ID'''
-    
-    if len(p) == 7:        
-        if p[1] == 'BLOCK':
-            print("Blockchain was created")
-            return True
-        
-        elif p[1] == 'ADD':
-            pass
-        
-        else:
-            print("Blockchain could not be created")
-            return False
-
-    else:
-        if p[1] == 'PRINT':
-             print("Printing Block")
-        elif p[1] == 'RUN':
-             print("Running Block")
-        elif p[1] == 'MINE':
-             print("Minning Block")
-        elif p[1] == 'EXPORT':
-             print("Exporting Block")
-        else:
-             print("Viewing Block")
-
 def p_argsopt(p):
     '''argsopt : args
                | empty'''
@@ -325,13 +333,14 @@ def p_empty(p):
     'empty :'
     pass
 
-def p_error(p):
-    print("Syntax error in input")
+# def p_error(p):
+#     print("Syntax error in input")
     
 
 
 parser = yacc.yacc()
-result = parser.parse('block MyBlock = (param1:str, param2:int)')
+# result = parser.parse('block MyBlock = (param1:str, param2:int)')
+result = parser.parse('block myBlock')
 print(result)  # Output: block was created
 
 
